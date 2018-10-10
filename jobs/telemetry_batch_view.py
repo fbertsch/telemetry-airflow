@@ -50,7 +50,8 @@ def retrieve_jar():
 
         parsed_uri = urlparse(jar_url)
         bucket, _, _ = parsed_uri.path.lstrip("/").partition("/")
-        full_url = "{uri.scheme}://{uri.netloc}/{bucket}/{uri_query}".format(uri=parsed_uri, bucket=bucket, uri_query=uri_query)
+        full_url = ("{uri.scheme}://{uri.netloc}/{bucket}/{uri_query}"
+                     .format(uri=parsed_uri, bucket=bucket, uri_query=uri_query))
 
         print("  Alias: {}".format(full_url))
         print("  Build URL: {}".format(build_url.strip()))
@@ -61,17 +62,22 @@ def retrieve_jar():
 
 
 def submit_job():
-    command = sum([
+    unformatted_opts = [
         ["--{}".format(key[4:].replace("_", "-")), value]
         for key, value in environ.items()
         if key.startswith("TBV_") and key != "TBV_CLASS"
-    ], [
+    ]
+
+    formatted_opts = [[k, v] if v else [k] 
+                      for k,v in unformatted_opts]
+
+    command = [
         "spark-submit",
         "--master", "yarn",
         "--deploy-mode", "client",
         "--class", environ["TBV_CLASS"],
         artifact_file,
-    ])
+    ] + [v for opt in formatted_opts for v in opt]
 
     call_exit_errors(command)
 
@@ -93,5 +99,5 @@ if environ.get("DO_RETRIEVE", "True") == "True":
 if environ.get("DO_SUBMIT", "True") == "True":
     submit_job()
 
-if environ.get("METASTORE_LOCATION") != None:
+if environ.get("METASTORE_LOCATION") is not None:
     update_metastore(environ.get("METASTORE_LOCATION"), environ.get("HIVE_SERVER"))
