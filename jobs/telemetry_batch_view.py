@@ -62,14 +62,11 @@ def retrieve_jar():
 
 
 def submit_job():
-    unformatted_opts = [
+    opts = [
         ["--{}".format(key[4:].replace("_", "-")), value]
         for key, value in environ.items()
         if key.startswith("TBV_") and key != "TBV_CLASS"
     ]
-
-    formatted_opts = [[k, v] if v else [k] 
-                      for k,v in unformatted_opts]
 
     command = [
         "spark-submit",
@@ -77,7 +74,7 @@ def submit_job():
         "--deploy-mode", "client",
         "--class", environ["TBV_CLASS"],
         artifact_file,
-    ] + [v for opt in formatted_opts for v in opt]
+    ] + [v for opt in opts for v in opt if len(v.strip()) > 0]
 
     call_exit_errors(command)
 
