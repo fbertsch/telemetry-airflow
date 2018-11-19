@@ -112,6 +112,7 @@ class MozDatabricksSubmitRunOperator(DatabricksSubmitRunOperator):
             "node_type_id": instance_type,
             "aws_attributes": aws_attributes,
             "spark_env_vars": env,
+            "cluster_name": job_name,
             "custom_tags": {
                 "Owner": owner,
                 "Application": "databricks",
